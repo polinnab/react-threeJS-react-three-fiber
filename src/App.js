@@ -1,24 +1,23 @@
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import SpherePage from "./pages/SherePage";
+import ModelPage from "./pages/ModelPage";
+import './style.css';
+import HomePage from "./pages/HomePage";
 
 function App() {
+
+  console.log('ttttt')
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="sphere" element={<SpherePage/>} exact></Route>
+        <Route path="3d-model" element={<ModelPage/>} exact></Route>
+        <Route path="/" element={<HomePage/>} exact></Route>
+        <Route path="*" element={<HomePage/>} exact></Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
 
