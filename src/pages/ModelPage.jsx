@@ -66,7 +66,6 @@ function Boxes(props) {
 
         if (secondAnimation) {
           ref.current[key].position.z += 0.05
-          // ref.current[key].position.lerp(vectorsBack[index], 0.001)
         }
 
         // if (thirdAnimation) {
