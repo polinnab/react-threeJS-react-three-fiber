@@ -1,9 +1,9 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Canvas, useFrame, useLoader } from '@react-three/fiber'
 import * as THREE from "three";
-import { Group, ShaderMaterial, TextureLoader } from "three";
-// import vertexShader from "../shaders/vertex.glsl"
+import { TextureLoader, BufferAttribute } from "three";
+import gsap  from "gsap";
 
 
 const vertexShader = `
@@ -36,7 +36,37 @@ const atmosphereFragmentShader = `
     float intensity = pow(0.6 - dot(vertexNormal, vec3(0.0, 0.0, 1.0)), 2.0);
     gl_FragColor = vec4(0.3, 0.6, 1.0, 1.0) * intensity;
   }`
-console.log(vertexShader)
+
+const starVertices = [];
+for (let i = 0; i < 10000; i++) {
+  const x = (Math.random() - 0.5) * 3000;
+  const y = (Math.random() - 0.5) * 2500;
+  const z = -Math.random() * 1500;
+  starVertices.push(x, y, z)
+}
+// vector for moving stars like neture
+const vector = new THREE.Vector3(50,100,-0.2)
+
+function Stars() {
+  const ref = useRef()
+  console.log(ref)
+
+  // little movings for stars
+  useFrame(() => {
+    ref.current.position.lerp(vector, 0.001)
+  })
+
+
+  const points =  new BufferAttribute(new Float32Array(starVertices), 3);
+  return(
+    <points ref={ref}>
+      <bufferGeometry>
+        <bufferAttribute attach={"attributes-position"} {...points} />
+      </bufferGeometry>
+      <pointsMaterial color={0xffffff}></pointsMaterial>
+    </points>
+  )
+}
 
 function Earth({mesh, setHeart}) {
     // This reference will give us direct access to the mesh
@@ -44,7 +74,6 @@ function Earth({mesh, setHeart}) {
     const refAtmosphere = useRef()
     const groupRef = useRef()
 
-    // Set up state for the hovered and active state
     const [mouse, setMouse] = useState({
       x: undefined,
       y: undefined
@@ -54,13 +83,15 @@ function Earth({mesh, setHeart}) {
       setMouse({x: (event.clientX / window.innerWidth) * 2 - 1, y: (event.clientY / window.innerHeight) * 2 - 1})
     })
 
-    console.log(mouse)
-
     // Change position/roration... meshe every frame, this is outside of React without overhead
     useFrame(() => {
-        refSphere.current.rotation.y += 0.001
+        refSphere.current.rotation.y += 0.002
         if(mouse.x) {
-          groupRef.current.rotation.y = mouse.x * 0.5
+          gsap.to(groupRef.current.rotation, {
+            x: mouse.y * 0.3,
+            y: mouse.x * 0.5,
+            duration: 2
+          })
         }
     })
 
@@ -93,20 +124,17 @@ function Earth({mesh, setHeart}) {
 }
 
 function EarthPage() {
-    const [isClicked, setIsClicked] = useState(false)
     return(
         <div>
-            <Link to="/"><button className="btn btn-primary" 
-                 type="button"
-                 style={{position: "absolute"}}>
-                     Back Home</button></Link>
-            <button className="btn btn-primary" style={{position: "absolute", top: '250px'}} onClick={() => setIsClicked(prev => !prev)}>Get back heart</button>
+            <div className="d-grid gap-2 mx-auto" style={{position: 'absolute', zIndex: '99999', left: '50px', top: '140px'}}>
+              <Link to="/sphere"><button className="btn btn-primary" type="button">Explore the Sphere</button></Link>
+              <Link to="/3d-model"><button className="btn btn-primary" type="button">See simple heart</button></Link>
+              <Link to="/heart"><button className="btn btn-primary" type="button">Feel the heart</button></Link>
+              <Link to="/donut"><button className="btn btn-primary" type="button">Donut</button></Link>
+            </div>
             <Canvas style={{width: '100vw', height: '100vh', backgroundColor: 'black'}}>
-              {/* <ambientLight /> */}
-              {/* <pointLight position={[10, 5, 400]}  color='#f9faf7'/>
-              <pointLight position={[-10, -20, 900]} color='#f7f5fa'/> */}
-
               <Earth />
+              <Stars></Stars>
             </Canvas>
         </div>
     )
