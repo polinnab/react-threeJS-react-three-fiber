@@ -131,6 +131,7 @@ function EarthPage() {
               <Link to="/3d-model"><button className="btn btn-primary" type="button">See simple heart</button></Link>
               <Link to="/heart"><button className="btn btn-primary" type="button">Feel the heart</button></Link>
               <Link to="/donut"><button className="btn btn-primary" type="button">Donut</button></Link>
+              <Link to="/shapepoints"><button className="btn btn-primary" type="button">Shape</button></Link>
             </div>
             <Canvas style={{width: '100vw', height: '100vh', backgroundColor: 'black'}}>
               <Earth />
