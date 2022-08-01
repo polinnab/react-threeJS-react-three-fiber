@@ -4,6 +4,8 @@ import { Canvas, useFrame, useLoader } from '@react-three/fiber'
 import * as THREE from "three";
 import { TextureLoader, BufferAttribute } from "three";
 import gsap  from "gsap";
+import { OrbitControls } from "@react-three/drei";
+
 
 
 const vertexShader = `
@@ -38,10 +40,10 @@ const atmosphereFragmentShader = `
   }`
 
 const starVertices = [];
-for (let i = 0; i < 10000; i++) {
+for (let i = 0; i < 13000; i++) {
   const x = (Math.random() - 0.5) * 3000;
   const y = (Math.random() - 0.5) * 2500;
-  const z = -Math.random() * 1500;
+  const z = (Math.random() - 0.5) * 1500;
   starVertices.push(x, y, z)
 }
 // vector for moving stars like neture
@@ -123,6 +125,15 @@ function Earth({mesh, setHeart}) {
     )
 }
 
+function Pin() {
+  return(
+    <mesh position={[1,0,1.7]}>
+      <sphereGeometry args={[.1, 30, 30]}></sphereGeometry>
+      <meshStandardMaterial color={'red'}></meshStandardMaterial>
+    </mesh>
+  )
+}
+
 function EarthPage() {
     return(
         <div>
@@ -131,11 +142,15 @@ function EarthPage() {
               <Link to="/3d-model"><button className="btn btn-primary" type="button">See simple heart</button></Link>
               <Link to="/heart"><button className="btn btn-primary" type="button">Feel the heart</button></Link>
               <Link to="/donut"><button className="btn btn-primary" type="button">Donut</button></Link>
+              <Link to="/anadea"><button className="btn btn-primary" type="button">Anadea Logo</button></Link>
               <Link to="/shapepoints"><button className="btn btn-primary" type="button">Shape</button></Link>
             </div>
             <Canvas style={{width: '100vw', height: '100vh', backgroundColor: 'black'}}>
               <Earth />
+              <ambientLight></ambientLight>
+              <Pin></Pin>
               <Stars></Stars>
+              <OrbitControls />
             </Canvas>
         </div>
     )
