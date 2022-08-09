@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Canvas, useFrame, useLoader } from '@react-three/fiber'
 import * as THREE from "three";
@@ -39,6 +39,15 @@ const atmosphereFragmentShader = `
     gl_FragColor = vec4(0.3, 0.6, 1.0, 1.0) * intensity;
   }`
 
+const tubeFragment = `
+  varying vec2 vertexUV;
+  void main(){
+    float dash = sin(vertexUV.x*100.);
+    if(dash<0.) discard;
+    gl_FragColor = vec4(0.820,0.841,0.908,0.9);
+  }`
+
+
 const starVertices = [];
 for (let i = 0; i < 13000; i++) {
   const x = (Math.random() - 0.5) * 3000;
@@ -70,7 +79,7 @@ function Stars() {
   )
 }
 
-function Earth({mesh, setHeart}) {
+function Earth() {
     // This reference will give us direct access to the mesh
     const refSphere = useRef()
     const refAtmosphere = useRef()
@@ -86,34 +95,41 @@ function Earth({mesh, setHeart}) {
     })
 
     // Change position/roration... meshe every frame, this is outside of React without overhead
-    useFrame(() => {
-        refSphere.current.rotation.y += 0.002
-        if(mouse.x) {
-          gsap.to(groupRef.current.rotation, {
-            x: mouse.y * 0.3,
-            y: mouse.x * 0.5,
-            duration: 2
-          })
-        }
+    useFrame(({camera}) => {
+
+      //!!!! It helps you to set your start camera position XYZ, so you be able to set current part of the Earth to see first.
+      // console.log('camera:', camera.position)
+
+      // camera.rotation.y = 0.97
+        // refSphere.current.rotation.y += 0.002
+        // if(mouse.x) {
+        //   gsap.to(groupRef.current.rotation, {
+        //     x: mouse.y * 0.3,
+        //     y: mouse.x * 0.5,
+        //     duration: 2
+        //   })
+        // }
+        // TODO: if sphere is rotationing, the points isn't rotationing with sphere. Do it with rotation points around the middle of the sphere
     })
 
-    const mapTexture = useLoader(TextureLoader, "/earth-uv-map.jpeg")
+    // const mapTexture = useLoader(TextureLoader, "/earthmap.jpg") //natural
+    const mapTexture = useLoader(TextureLoader, "/earth-uv-map.jpeg")  //design
     return (
       <>
       <group ref={groupRef}>
         <mesh
           position={[0, 0, 0]}
           ref={refSphere}
-          scale={.4}>
-          <sphereGeometry args={[5, 64, 64]} />
+          scale={1}>
+          <sphereGeometry args={[1, 64, 64]} />
           <shaderMaterial attach='material' vertexShader={vertexShader} fragmentShader={fragmentShader} uniforms={{globeTexture: {value: mapTexture}}}/>
           </mesh>
 
           <mesh
           position={[0, 0, 0]}
           ref={refAtmosphere}
-          scale={.48}>
-          <sphereGeometry args={[5, 64, 64]} />
+          scale={1.3}>
+          <sphereGeometry args={[1, 64, 64]} />
           <shaderMaterial attach='material' 
                           vertexShader={atmosphereVertexShader} 
                           fragmentShader={atmosphereFragmentShader}
@@ -125,12 +141,96 @@ function Earth({mesh, setHeart}) {
     )
 }
 
-function Pin() {
+// Getting coordinates x,y,z on the sphere by latitude and longitude. Sphere scale shold be '1'
+function getCoordinates(lat, lng) {
+  // convert latitude and longitude to Phi and Theta
+  const Phi = (90-lat)*(Math.PI/180)
+  const Theta = (lng+180)*(Math.PI/180)
+  // r = radius of SphereGeometry (should be 1 to be better)
+  // x = -r * (sin(Phi) * cos(Theta))
+  // y = cos(Phi)
+  // z = sin(Phi) * sin(Theta)
+  const x = -(Math.sin(Phi) * Math.cos(Theta))
+  const y = Math.cos(Phi)
+  const z = Math.sin(Phi) * Math.sin(Theta)
+
+  return ({x,y,z})
+}
+
+const pinsCoordinates = [
+  {lat: 38.8951, lng: -77.0364},
+  {lat: 48.450001, lng: 34.983334},
+  {lat: 31.628674, lng: -7.992047},
+  {lat: -18.7669, lng: 46.8691},
+  {lat: -8.409518, lng: 115.188919},
+  {lat: -37.840935, lng: 144.946457}
+]
+
+const pinsXYZCoordinates = [];
+pinsCoordinates.forEach(pin => {
+  const pinXYZ = getCoordinates(pin.lat, pin.lng)
+  pinsXYZCoordinates.push(pinXYZ)
+})
+
+function Pins() {
+
   return(
-    <mesh position={[1,0,1.7]}>
-      <sphereGeometry args={[.1, 30, 30]}></sphereGeometry>
-      <meshStandardMaterial color={'red'}></meshStandardMaterial>
-    </mesh>
+    <>
+      {pinsXYZCoordinates.map(pin => {
+        return(
+          <mesh key={pin.x} position={[pin.x,pin.y,pin.z]}>
+            <sphereGeometry args={[.02, 30, 30]}></sphereGeometry>
+            <meshStandardMaterial color={0xDC296C}></meshStandardMaterial>
+          </mesh>
+        )
+      })}
+    </>
+  )
+}
+
+
+
+function Curves() {
+  const [pathes, setPathes] = useState([])
+
+  useEffect(() => {
+    const vectors = []
+
+    for (let i = 0; i < pinsXYZCoordinates.length; i++) {
+
+      const vector = new THREE.Vector3(pinsXYZCoordinates[i].x, pinsXYZCoordinates[i].y, pinsXYZCoordinates[i].z)
+      vectors.push(vector)
+
+      if(i >= 1) {
+        let points = []
+        for (let j = 0; j <= 20; j++) {
+          let p = new THREE.Vector3().lerpVectors(vectors[i-1], vectors[i], j/20)
+          p.normalize();
+          p.multiplyScalar(1 + 0.05 * Math.sin(Math.PI * j/20))
+          points.push(p)
+        }
+        const path = new THREE.CatmullRomCurve3(points) 
+        setPathes(prev => [...prev, path]) 
+      }
+    }
+  }, [])
+  
+  
+  return(
+    <>
+    {pathes.map((path, index) => {
+      return(
+        <mesh key={index}>
+          <tubeGeometry args={[path, 20, 0.007, 8, false]}></tubeGeometry>
+          <shaderMaterial transparent={true} 
+                          fragmentShader={tubeFragment}
+                          vertexShader={vertexShader}
+                          side={THREE.DoubleSide}/>
+          {/* <meshStandardMaterial color={'blue'}></meshStandardMaterial> */}
+        </mesh>
+      )
+    })}
+    </>
   )
 }
 
@@ -145,10 +245,11 @@ function EarthPage() {
               <Link to="/anadea"><button className="btn btn-primary" type="button">Anadea Logo</button></Link>
               <Link to="/shapepoints"><button className="btn btn-primary" type="button">Shape</button></Link>
             </div>
-            <Canvas style={{width: '100vw', height: '100vh', backgroundColor: 'black'}}>
+            <Canvas style={{width: '100vw', height: '100vh', backgroundColor: 'black'}} camera={{fov: 70, near: 0.001, position: [2.03,0.716,-0.7999]}}>
               <Earth />
               <ambientLight></ambientLight>
-              <Pin></Pin>
+              <Pins></Pins>
+              <Curves></Curves>
               <Stars></Stars>
               <OrbitControls />
             </Canvas>
