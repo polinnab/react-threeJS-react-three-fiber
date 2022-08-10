@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, createRef } from "react";
 import { Link } from "react-router-dom";
 import { Canvas, useFrame, useLoader } from '@react-three/fiber'
 import * as THREE from "three";
-import { TextureLoader, BufferAttribute } from "three";
+import { TextureLoader, BufferAttribute, SphereGeometry } from "three";
 import gsap  from "gsap";
 import { OrbitControls } from "@react-three/drei";
 
@@ -79,11 +79,14 @@ function Stars() {
   )
 }
 
+const EarthPosition = []
+
 function Earth() {
     // This reference will give us direct access to the mesh
     const refSphere = useRef()
     const refAtmosphere = useRef()
     const groupRef = useRef()
+    // const satelliteRef = useRef()
 
     const [mouse, setMouse] = useState({
       x: undefined,
@@ -95,13 +98,13 @@ function Earth() {
     })
 
     // Change position/roration... meshe every frame, this is outside of React without overhead
-    useFrame(({camera}) => {
-
+    useFrame(() => {
       //!!!! It helps you to set your start camera position XYZ, so you be able to set current part of the Earth to see first.
       // console.log('camera:', camera.position)
 
-      // camera.rotation.y = 0.97
-        // refSphere.current.rotation.y += 0.002
+        refSphere.current.rotation.y += 0.002
+
+        // mouse move parallax. Doesn't work with pins and curves here.
         // if(mouse.x) {
         //   gsap.to(groupRef.current.rotation, {
         //     x: mouse.y * 0.3,
@@ -109,7 +112,6 @@ function Earth() {
         //     duration: 2
         //   })
         // }
-        // TODO: if sphere is rotationing, the points isn't rotationing with sphere. Do it with rotation points around the middle of the sphere
     })
 
     // const mapTexture = useLoader(TextureLoader, "/earthmap.jpg") //natural
@@ -128,13 +130,14 @@ function Earth() {
           <mesh
           position={[0, 0, 0]}
           ref={refAtmosphere}
-          scale={1.3}>
+          scale={1.2}>
           <sphereGeometry args={[1, 64, 64]} />
           <shaderMaterial attach='material' 
                           vertexShader={atmosphereVertexShader} 
                           fragmentShader={atmosphereFragmentShader}
                           blending={THREE.AdditiveBlending}
-                          side={THREE.BackSide}/>
+                          side={THREE.BackSide}
+                          transparent={true}/>
           </mesh>
         </group>
       </>
@@ -173,9 +176,15 @@ pinsCoordinates.forEach(pin => {
 })
 
 function Pins() {
+  const ref = useRef()
+
+  useFrame(() => {
+    ref.current.rotation.y += 0.002
+  })
 
   return(
     <>
+      <group ref={ref}>
       {pinsXYZCoordinates.map(pin => {
         return(
           <mesh key={pin.x} position={[pin.x,pin.y,pin.z]}>
@@ -184,6 +193,7 @@ function Pins() {
           </mesh>
         )
       })}
+      </group>
     </>
   )
 }
@@ -192,6 +202,7 @@ function Pins() {
 
 function Curves() {
   const [pathes, setPathes] = useState([])
+  const ref = useRef()
 
   useEffect(() => {
     const vectors = []
@@ -214,10 +225,14 @@ function Curves() {
       }
     }
   }, [])
-  
+
+  useFrame(() => {
+    ref.current.rotation.y += 0.002
+  })
   
   return(
     <>
+    <group ref={ref}>
     {pathes.map((path, index) => {
       return(
         <mesh key={index}>
@@ -230,7 +245,33 @@ function Curves() {
         </mesh>
       )
     })}
+    </group>
     </>
+  )
+}
+
+
+function Satellite() {
+  const ref = useRef()
+
+  const moonTexture = useLoader(TextureLoader, '/moon.jpeg');
+
+  useFrame(() => {
+    // circle trajectory
+    let date = Date.now() * 0.5 * 0.001 + 1;
+    ref.current.position.set(
+      Math.cos(date) * 2 + 0,
+      0,
+      Math.sin(date) * 2 + 0
+    );
+    // rotation
+    ref.current.rotation.y += 0.004
+  })
+  return(
+    <mesh ref={ref} position={[0, 0, 0]}>
+        <sphereGeometry args={[.2, 30, 30]}></sphereGeometry>
+        <meshStandardMaterial map={moonTexture}></meshStandardMaterial>
+    </mesh> 
   )
 }
 
@@ -245,12 +286,13 @@ function EarthPage() {
               <Link to="/anadea"><button className="btn btn-primary" type="button">Anadea Logo</button></Link>
               <Link to="/shapepoints"><button className="btn btn-primary" type="button">Shape</button></Link>
             </div>
-            <Canvas style={{width: '100vw', height: '100vh', backgroundColor: 'black'}} camera={{fov: 70, near: 0.001, position: [2.03,0.716,-0.7999]}}>
+            <Canvas style={{width: '100vw', height: '100vh', backgroundColor: 'black'}} camera={{fov: 70, near: 0.001, position: [2.03,0.716,-2.3999]}}>
               <Earth />
               <ambientLight></ambientLight>
               <Pins></Pins>
               <Curves></Curves>
               <Stars></Stars>
+              <Satellite></Satellite>
               <OrbitControls />
             </Canvas>
         </div>
