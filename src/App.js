@@ -7,8 +7,8 @@ import DonutPage from "./pages/DonutPage";
 import EarthPage from "./pages/EarthPage";
 
 import './style.css';
-import ShapesPointsPage from "./pages/ShapesPointsPage";
 import AnadeaPage from "./pages/AnadeaPage";
+import UkrainePointsPage from "./pages/UkrainePointsPage";
 
 function App() {
 
@@ -22,7 +22,7 @@ function App() {
         <Route path="heart" element={<HeartBoxesPage/>} exact></Route>
         <Route path="donut" element={<DonutPage/>} exact></Route>
         <Route path="anadea" element={<AnadeaPage/>} exact></Route>
-        <Route path="shapepoints" element={<ShapesPointsPage/>} exact></Route>
+        <Route path="ukraine" element={<UkrainePointsPage/>} exact></Route>
         <Route path="/" element={<EarthPage/>} exact></Route>
         <Route path="*" element={<EarthPage/>} exact></Route>
       </Routes>

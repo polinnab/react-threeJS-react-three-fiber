@@ -79,8 +79,6 @@ function Stars() {
   )
 }
 
-const EarthPosition = []
-
 function Earth() {
     // This reference will give us direct access to the mesh
     const refSphere = useRef()
@@ -144,7 +142,7 @@ function Earth() {
     )
 }
 
-// Getting coordinates x,y,z on the sphere by latitude and longitude. Sphere scale shold be '1'
+// Getting coordinates x,y,z on the sphere by latitude and longitude. Sphere scale should be '1'
 function getCoordinates(lat, lng) {
   // convert latitude and longitude to Phi and Theta
   const Phi = (90-lat)*(Math.PI/180)
@@ -160,13 +158,24 @@ function getCoordinates(lat, lng) {
   return ({x,y,z})
 }
 
+// const pinsCoordinates = [
+//   {lat: 38.8951, lng: -77.0364},
+//   {lat: 48.450001, lng: 34.983334},
+//   {lat: 31.628674, lng: -7.992047},
+//   {lat: -18.7669, lng: 46.8691},
+//   {lat: -8.409518, lng: 115.188919},
+//   {lat: -37.840935, lng: 144.946457}
+// ]
+
 const pinsCoordinates = [
-  {lat: 38.8951, lng: -77.0364},
-  {lat: 48.450001, lng: 34.983334},
-  {lat: 31.628674, lng: -7.992047},
-  {lat: -18.7669, lng: 46.8691},
-  {lat: -8.409518, lng: 115.188919},
-  {lat: -37.840935, lng: 144.946457}
+  {lat: 50.450001, lng: 30.523333},  //Kyiv
+  {lat: 25.276987, lng: 55.296249},  //Dubai
+  {lat: 14.599512, lng: 120.984222},  //Manila
+  {lat: 34.672314, lng: 135.484802},  //Osaka
+  {lat: 21.315603, lng: -157.858093},  //Honolulu
+  {lat: 47.608013, lng: -122.335167},  //Seattle
+  {lat: 51.509865, lng: -0.118092},  //London
+  {lat: 49.842957, lng: 24.031111}  //Lviv
 ]
 
 const pinsXYZCoordinates = [];
@@ -258,7 +267,7 @@ function Satellite() {
 
   useFrame(() => {
     // circle trajectory
-    let date = Date.now() * 0.5 * 0.001 + 1;
+    let date = Date.now() * 0.0005 + 1;
     ref.current.position.set(
       Math.cos(date) * 2 + 0,
       0,
@@ -267,6 +276,7 @@ function Satellite() {
     // rotation
     ref.current.rotation.y += 0.004
   })
+
   return(
     <mesh ref={ref} position={[0, 0, 0]}>
         <sphereGeometry args={[.2, 30, 30]}></sphereGeometry>
@@ -284,7 +294,7 @@ function EarthPage() {
               <Link to="/heart"><button className="btn btn-primary" type="button">Feel the heart</button></Link>
               <Link to="/donut"><button className="btn btn-primary" type="button">Donut</button></Link>
               <Link to="/anadea"><button className="btn btn-primary" type="button">Anadea Logo</button></Link>
-              <Link to="/shapepoints"><button className="btn btn-primary" type="button">Shape</button></Link>
+              <Link to="/ukraine"><button className="btn btn-primary" type="button">Ukraine</button></Link>
             </div>
             <Canvas style={{width: '100vw', height: '100vh', backgroundColor: 'black'}} camera={{fov: 70, near: 0.001, position: [2.03,0.716,-2.3999]}}>
               <Earth />

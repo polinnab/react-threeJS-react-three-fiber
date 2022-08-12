@@ -113,9 +113,9 @@ function AnadeaPage() {
                   <pointLight position={[10, 30, 100]} />
                   <pointLight position={[-10, 40, -30]} />
                   <pointLight position={[50, 20, -50]} />
-                  {/* <Model meshColor={color}/> */}
+                  <Model meshColor={color}/>
                   {/* <ModelFBX/> */}
-                  <ModelGLB></ModelGLB>
+                  {/* <ModelGLB></ModelGLB> */}
                   <OrbitControls />
                 </Suspense>
             </Canvas>
