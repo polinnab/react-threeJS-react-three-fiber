@@ -1,7 +1,10 @@
 # THREE JS in React vs React-Three/Fiber
 
-This project shows two patterns of building 3d graffic models in react apps. Native Three JS is more complicated than special new library @react-three/fiber. But ***@react-three/fiber*** could use only in ***18 versiion React or higher***
-Here you can see 2 routing pages: with custom sphere model on the first page and with external .fbx model on the second.
+This project demonstrated some posibillities of using Three.js library. In general I used @react-three/fiber because this is a React app and it's better to use @react-three/fiber than native Three.js. Notice that ***@react-three/fiber*** could use only in ***18 versiion React or higher***
+
+There is only one page wich used native - SpherePage.jsx
+
+....
 
 # Getting Started with Create React App
 
